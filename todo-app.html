@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="چک‌لیست روزانه">
+<meta name="theme-color" content="#EAE2D0">
+<title>چک‌لیست روزانه</title>
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22%DA%86%DA%A9%E2%80%8C%D9%84%DB%8C%D8%B3%D8%AA%20%D8%B1%D9%88%D8%B2%D8%A7%D9%86%D9%87%22%2C%22short_name%22%3A%22%DA%86%DA%A9%E2%80%8C%D9%84%DB%8C%D8%B3%D8%AA%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23EAE2D0%22%2C%22theme_color%22%3A%22%23EAE2D0%22%2C%22dir%22%3A%22rtl%22%2C%22lang%22%3A%22fa%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%253D%2522http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2522%2520viewBox%253D%25220%25200%2520100%2520100%2522%253E%253Crect%2520width%253D%2522100%2522%2520height%253D%2522100%2522%2520rx%253D%252220%2522%2520fill%253D%2522%252523EAE2D0%2522%252F%253E%253Crect%2520x%253D%252222%2522%2520y%253D%252220%2522%2520width%253D%252256%2522%2520height%253D%252214%2522%2520rx%253D%25225%2522%2520fill%253D%2522%252523B23A32%2522%252F%253E%253Crect%2520x%253D%252222%2522%2520y%253D%252243%2522%2520width%253D%252256%2522%2520height%253D%252214%2522%2520rx%253D%25225%2522%2520fill%253D%2522%252523C97F2E%2522%252F%253E%253Crect%2520x%253D%252222%2522%2520y%253D%252266%2522%2520width%253D%252256%2522%2520height%253D%252214%2522%2520rx%253D%25225%2522%2520fill%253D%2522%25252352785B%2522%252F%253E%253C%252Fsvg%253E%22%2C%22sizes%22%3A%22any%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+<style>
+/* iOS/iPhone: respect the notch and home-indicator safe areas everywhere, not just the bottom nav */
+html{ height:-webkit-fill-available; }
+</style>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap');
+
+:root{
+  --paper:#EAE2D0;
+  --paper-light:#F5F0E4;
+  --ink:#2B241C;
+  --ink-soft:#7A7261;
+  --urgent:#B23A32;
+  --urgent-bg:#F3DAD7;
+  --important:#C97F2E;
+  --important-bg:#F3E3CE;
+  --optional-border:#D8CFB8;
+  --done:#52785B;
+  --done-bg:#DCE6DC;
+  --accent:#8B6B2E;
+  --white:#FFFFFF;
+  --line:#D8CFB8;
+}
+
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Vazirmatn',Tahoma,sans-serif;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+}
+#app{
+  width:100%;
+  max-width:520px;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  padding:18px 16px 90px;
+  position:relative;
+}
+
+/* ---- Backup bar ---- */
+.backup-bar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:14px;
+}
+.backup-bar button, .backup-bar label{
+  font-family:inherit;
+  font-size:11px;
+  color:var(--ink-soft);
+  background:var(--paper-light);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:6px 10px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+.backup-bar button:active, .backup-bar label:active{opacity:0.7;}
+.backup-bar .status{
+  font-size:11px;
+  color:var(--done);
+  display:flex;
+  align-items:center;
+  gap:4px;
+  padding:6px 4px;
+}
+.backup-bar .status.err{color:var(--urgent);}
+
+/* ---- Header / day nav ---- */
+.day-nav{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:18px;
+}
+.day-nav button{
+  background:none;
+  border:none;
+  font-size:22px;
+  color:var(--ink);
+  cursor:pointer;
+  padding:6px 12px;
+  border-radius:10px;
+}
+.day-nav button:active{background:var(--paper-light);}
+.day-label{
+  text-align:center;
+  flex:1;
+}
+.day-label .weekday{
+  font-weight:700;
+  font-size:18px;
+}
+.day-label .date{
+  font-size:13px;
+  color:var(--ink-soft);
+  margin-top:2px;
+}
+.today-pill{
+  display:inline-block;
+  margin-top:4px;
+  font-size:11px;
+  color:var(--accent);
+  cursor:pointer;
+  text-decoration:underline;
+}
+
+/* ---- Progress ring ---- */
+.progress-wrap{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  background:var(--paper-light);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:14px 16px;
+  margin-bottom:20px;
+}
+.ring{
+  width:64px;
+  height:64px;
+  border-radius:50%;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+}
+.ring-inner{
+  width:50px;
+  height:50px;
+  border-radius:50%;
+  background:var(--paper-light);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  font-size:14px;
+}
+.progress-text{flex:1;}
+.progress-text .big{
+  font-weight:800;
+  font-size:15px;
+  margin-bottom:2px;
+}
+.progress-text .small{
+  font-size:12px;
+  color:var(--ink-soft);
+}
+
+/* ---- Add task ---- */
+.add-row{
+  display:flex;
+  gap:8px;
+  margin-bottom:10px;
+}
+.add-row input{
+  flex:1;
+  border:1px solid var(--line);
+  background:var(--white);
+  border-radius:12px;
+  padding:12px 14px;
+  font-family:inherit;
+  font-size:16px;
+  color:var(--ink);
+  outline:none;
+}
+.add-row input:focus{border-color:var(--accent);}
+.add-row button{
+  background:var(--ink);
+  color:var(--paper-light);
+  border:none;
+  border-radius:12px;
+  padding:0 18px;
+  font-size:20px;
+  cursor:pointer;
+}
+.add-row button:active{opacity:0.8;}
+
+.priority-picker{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  margin-bottom:22px;
+  padding:0 2px;
+}
+.priority-picker span{font-size:12px;color:var(--ink-soft);}
+.swatch{
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  cursor:pointer;
+  border:2px solid transparent;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.swatch.urgent{background:var(--urgent);}
+.swatch.important{background:var(--important);}
+.swatch.optional{background:var(--white); border-color:var(--optional-border);}
+.swatch.selected{border-color:var(--ink); box-shadow:0 0 0 2px var(--paper);}
+.swatch.selected::after{content:'✓'; color:var(--ink); font-size:13px;}
+.swatch.urgent.selected::after, .swatch.important.selected::after{color:var(--white);}
+
+/* ---- Groups & tasks ---- */
+.group{margin-bottom:16px;}
+.group-header{
+  font-size:12px;
+  font-weight:700;
+  color:var(--ink-soft);
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:8px;
+}
+.group-header .dot{width:9px;height:9px;border-radius:50%;}
+.group-header .dot.urgent{background:var(--urgent);}
+.group-header .dot.important{background:var(--important);}
+.group-header .dot.optional{background:var(--white); border:1.5px solid var(--optional-border);}
+.group-list{display:flex; flex-direction:column; gap:8px; min-height:6px;}
+
+.task{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  border-radius:12px;
+  padding:10px 10px;
+  background:var(--white);
+  border:1.5px solid var(--optional-border);
+  touch-action:pan-y;
+}
+.task.urgent{background:var(--urgent-bg); border-color:var(--urgent);}
+.task.important{background:var(--important-bg); border-color:var(--important);}
+.task.optional{background:var(--white); border-color:var(--optional-border);}
+.task.done{background:var(--done-bg); border-color:var(--done);}
+.task.dragging{opacity:0.55;}
+
+.handle{
+  cursor:grab;
+  color:var(--ink-soft);
+  font-size:16px;
+  padding:4px 6px;
+  touch-action:none;
+  user-select:none;
+}
+.check{
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  border:2px solid var(--ink-soft);
+  background:none;
+  flex-shrink:0;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--white);
+  font-size:12px;
+}
+.task.done .check{background:var(--done); border-color:var(--done);}
+.task.done .check::after{content:'✓';}
+
+.text{
+  flex:1;
+  font-size:16px;
+  line-height:1.5;
+  outline:none;
+  word-break:break-word;
+}
+.task.done .text{color:var(--ink-soft); text-decoration:line-through;}
+
+.del{
+  background:none;
+  border:none;
+  color:var(--ink-soft);
+  font-size:16px;
+  cursor:pointer;
+  padding:2px 6px;
+}
+
+.empty-state{
+  text-align:center;
+  color:var(--ink-soft);
+  font-size:13px;
+  padding:30px 10px;
+}
+
+/* ---- Report view ---- */
+#report-view{display:none;}
+.report-tabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:16px;
+}
+.report-tabs button{
+  flex:1;
+  border:1px solid var(--line);
+  background:var(--paper-light);
+  color:var(--ink);
+  padding:9px;
+  border-radius:10px;
+  font-family:inherit;
+  font-size:13px;
+  cursor:pointer;
+}
+.report-tabs button.active{
+  background:var(--ink);
+  color:var(--paper-light);
+  border-color:var(--ink);
+}
+.report-summary{
+  background:var(--paper-light);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:18px;
+  text-align:center;
+}
+.report-summary .pct{font-size:32px; font-weight:800; color:var(--accent);}
+.report-summary .lbl{font-size:12px; color:var(--ink-soft); margin-top:4px;}
+.report-bar{
+  height:8px;
+  background:var(--optional-border);
+  border-radius:6px;
+  overflow:hidden;
+  margin-top:12px;
+}
+.report-bar-fill{height:100%; background:var(--accent);}
+
+.report-section-title{
+  font-size:13px;
+  font-weight:700;
+  color:var(--ink-soft);
+  margin:18px 0 8px;
+}
+.day-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 4px;
+  border-bottom:1px solid var(--line);
+  font-size:13px;
+}
+.day-row .dname{flex:1;}
+.day-row .dpct{font-weight:700; color:var(--accent); width:42px; text-align:left;}
+.mini-bar{width:60px; height:6px; background:var(--optional-border); border-radius:4px; overflow:hidden;}
+.mini-bar-fill{height:100%; background:var(--accent);}
+
+.incomplete-item{
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  padding:8px 4px;
+  border-bottom:1px solid var(--line);
+  font-size:13px;
+}
+.incomplete-item .dot{width:9px;height:9px;border-radius:50%; margin-top:5px; flex-shrink:0;}
+.incomplete-item .dot.urgent{background:var(--urgent);}
+.incomplete-item .dot.important{background:var(--important);}
+.incomplete-item .dot.optional{background:var(--white); border:1.5px solid var(--optional-border);}
+.incomplete-item .itxt{flex:1;}
+.incomplete-item .idate{color:var(--ink-soft); font-size:11px;}
+
+/* ---- Bottom nav ---- */
+.bottom-nav{
+  position:fixed;
+  bottom:0; left:0; right:0;
+  display:flex;
+  justify-content:center;
+  background:var(--paper);
+  border-top:1px solid var(--line);
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+}
+.bottom-nav-inner{
+  width:100%;
+  max-width:520px;
+  display:flex;
+  gap:10px;
+}
+.bottom-nav button{
+  flex:1;
+  border:none;
+  background:none;
+  color:var(--ink-soft);
+  font-family:inherit;
+  font-size:13px;
+  font-weight:600;
+  padding:8px;
+  border-radius:10px;
+  cursor:pointer;
+}
+.bottom-nav button.active{
+  background:var(--ink);
+  color:var(--paper-light);
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="backup-bar" id="backupBar">
+    <button id="chooseFolderBtn" style="display:none;">📁 انتخاب پوشه ذخیره خودکار</button>
+    <button id="grantPermBtn" style="display:none;">📁 فعال‌سازی ذخیره خودکار</button>
+    <span class="status" id="folderStatus" style="display:none;">✓ ذخیره خودکار در پوشه فعاله</span>
+    <button id="exportBtn">⬇ دانلود پشتیبان</button>
+    <label id="importLabel">⬆ بازیابی از فایل<input type="file" id="importInput" accept="application/json" style="display:none;"></label>
+    <button id="shareBtn">🔗 اشتراک‌گذاری / انتقال</button>
+  </div>
+
+  <div id="day-view">
+    <div class="day-nav">
+      <button id="prevDay">‹</button>
+      <div class="day-label">
+        <div class="weekday" id="weekdayLabel"></div>
+        <div class="date" id="dateLabel"></div>
+        <div class="today-pill" id="todayPill" style="display:none;">برو به امروز</div>
+      </div>
+      <button id="nextDay">›</button>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="ring" id="ring">
+        <div class="ring-inner" id="ringPct">۰٪</div>
+      </div>
+      <div class="progress-text">
+        <div class="big" id="progressBig">هنوز کاری ثبت نشده</div>
+        <div class="small" id="progressSmall">کارهای این روز رو بنویس</div>
+      </div>
+    </div>
+
+    <div class="add-row">
+      <input type="text" id="taskInput" placeholder="یه کار جدید بنویس...">
+      <button id="addBtn">+</button>
+    </div>
+    <div class="priority-picker">
+      <span>اولویت:</span>
+      <div class="swatch urgent selected" data-p="urgent" title="ضروری"></div>
+      <div class="swatch important" data-p="important" title="واجب"></div>
+      <div class="swatch optional" data-p="optional" title="خوبه انجام بشه"></div>
+    </div>
+
+    <div id="groups">
+      <div class="group" data-p="urgent">
+        <div class="group-header"><span class="dot urgent"></span>ضروری</div>
+        <div class="group-list" id="list-urgent"></div>
+      </div>
+      <div class="group" data-p="important">
+        <div class="group-header"><span class="dot important"></span>واجب</div>
+        <div class="group-list" id="list-important"></div>
+      </div>
+      <div class="group" data-p="optional">
+        <div class="group-header"><span class="dot optional"></span>خوبه انجام بشه</div>
+        <div class="group-list" id="list-optional"></div>
+      </div>
+    </div>
+    <div class="empty-state" id="emptyState" style="display:none;">امروز هنوز کاری ننوشتی. از بالا شروع کن ✎</div>
+  </div>
+
+  <div id="report-view">
+    <div class="report-tabs">
+      <button id="tabWeek" class="active">هفتگی (۷ روز)</button>
+      <button id="tabMonth">ماهانه (۳۰ روز)</button>
+    </div>
+    <div class="backup-bar" style="margin-bottom:10px;">
+      <button id="exportExcelBtn">⬇ خروجی اکسل ماهانه</button>
+    </div>
+    <div class="report-summary">
+      <div class="pct" id="reportPct">۰٪</div>
+      <div class="lbl" id="reportLbl">میانگین پیشرفت</div>
+      <div class="report-bar"><div class="report-bar-fill" id="reportBarFill" style="width:0%;"></div></div>
+    </div>
+    <div class="report-section-title">روند روزانه</div>
+    <div id="dayList"></div>
+    <div class="report-section-title">کارهای انجام‌نشده</div>
+    <div id="incompleteList"></div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <button id="navDay" class="active">امروز</button>
+      <button id="navReport">گزارش</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+(function(){
+
+  // ---------- helpers ----------
+  function pad(n){return n<10?'0'+n:''+n;}
+  function toISO(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+  function fromISO(s){var p=s.split('-'); return new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));}
+  function faNum(n){return n.toLocaleString('fa-IR');}
+  function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+
+  var weekdayFmt = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {weekday:'long'});
+  var dateFmt = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {day:'numeric', month:'long', year:'numeric'});
+  var shortFmt = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {weekday:'short', day:'numeric', month:'short'});
+
+  var PRIO_LABEL = {urgent:'ضروری', important:'واجب', optional:'خوبه انجام بشه'};
+  var PRIO_ORDER = ['urgent','important','optional'];
+
+  var today = new Date();
+  var todayISO = toISO(today);
+  var currentDate = todayISO;
+  var currentTasks = [];
+  var selectedPriority = 'urgent';
+  var view = 'day';
+  var reportRange = 'week';
+
+  // ---------- storage (localStorage as fast local cache) ----------
+  async function loadDay(iso){
+    try{
+      var raw = localStorage.getItem('todoapp:day:'+iso);
+      if(raw) return JSON.parse(raw);
+      return [];
+    }catch(e){
+      return [];
+    }
+  }
+  async function saveDay(iso, tasks){
+    try{
+      localStorage.setItem('todoapp:day:'+iso, JSON.stringify(tasks));
+    }catch(e){
+      console.error('storage save failed', e);
+    }
+    syncToFolder();
+  }
+
+  // ---------- folder backup (survives clearing the browser cache) ----------
+  var BACKUP_FILENAME = 'todo-checklist-backup.json';
+  var dirHandle = null;
+  var supportsFS = ('showDirectoryPicker' in window);
+
+  function idbOpen(){
+    return new Promise(function(resolve,reject){
+      var req = indexedDB.open('todoapp-fs', 1);
+      req.onupgradeneeded = function(){ req.result.createObjectStore('handles'); };
+      req.onsuccess = function(){ resolve(req.result); };
+      req.onerror = function(){ reject(req.error); };
+    });
+  }
+  async function idbSet(key, val){
+    var db = await idbOpen();
+    return new Promise(function(resolve,reject){
+      var tx = db.transaction('handles','readwrite');
+      tx.objectStore('handles').put(val, key);
+      tx.oncomplete = function(){ resolve(); };
+      tx.onerror = function(){ reject(tx.error); };
+    });
+  }
+  async function idbGet(key){
+    var db = await idbOpen();
+    return new Promise(function(resolve,reject){
+      var tx = db.transaction('handles','readonly');
+      var req = tx.objectStore('handles').get(key);
+      req.onsuccess = function(){ resolve(req.result || null); };
+      req.onerror = function(){ reject(req.error); };
+    });
+  }
+
+  function collectAllLocal(){
+    var out = {};
+    for(var i=0;i<localStorage.length;i++){
+      var k = localStorage.key(i);
+      if(k && k.indexOf('todoapp:day:')===0){
+        var iso = k.slice('todoapp:day:'.length);
+        try{ out[iso] = JSON.parse(localStorage.getItem(k)); }catch(e){}
+      }
+    }
+    return out;
+  }
+
+  function setFolderStatus(mode){
+    document.getElementById('chooseFolderBtn').style.display = mode==='choose' ? 'inline-flex':'none';
+    document.getElementById('grantPermBtn').style.display = mode==='grant' ? 'inline-flex':'none';
+    document.getElementById('folderStatus').style.display = mode==='ok' ? 'inline-flex':'none';
+    var status = document.getElementById('folderStatus');
+    status.classList.remove('err');
+    status.textContent = '✓ ذخیره خودکار در پوشه فعاله';
+  }
+
+  async function writeBackupNow(){
+    if(!dirHandle) return;
+    try{
+      var fh = await dirHandle.getFileHandle(BACKUP_FILENAME, {create:true});
+      var writable = await fh.createWritable();
+      await writable.write(JSON.stringify(collectAllLocal(), null, 2));
+      await writable.close();
+    }catch(e){
+      console.error('folder backup write failed', e);
+      var status = document.getElementById('folderStatus');
+      status.style.display='inline-flex';
+      status.classList.add('err');
+      status.textContent = '⚠ خطا در ذخیره خودکار';
+    }
+  }
+
+  function syncToFolder(){
+    if(dirHandle) writeBackupNow();
+  }
+
+  async function readBackupIntoLocal(){
+    if(!dirHandle) return;
+    try{
+      var fh = await dirHandle.getFileHandle(BACKUP_FILENAME, {create:false});
+      var file = await fh.getFile();
+      var text = await file.text();
+      var data = JSON.parse(text);
+      Object.keys(data).forEach(function(iso){
+        localStorage.setItem('todoapp:day:'+iso, JSON.stringify(data[iso]));
+      });
+    }catch(e){
+      // no backup file yet on first-ever setup; that's fine
+    }
+  }
+
+  async function activateFolder(handle){
+    dirHandle = handle;
+    await idbSet('saveDir', handle);
+    await readBackupIntoLocal();
+    setFolderStatus('ok');
+    await writeBackupNow();
+    // refresh whatever is currently on screen with restored data
+    await goToDate(currentDate);
+    if(view==='report') renderReport();
+  }
+
+  document.getElementById('chooseFolderBtn').addEventListener('click', async function(){
+    try{
+      var handle = await window.showDirectoryPicker();
+      await activateFolder(handle);
+    }catch(e){ /* user cancelled */ }
+  });
+  document.getElementById('grantPermBtn').addEventListener('click', async function(){
+    try{
+      var handle = await idbGet('saveDir');
+      if(!handle) return;
+      var perm = await handle.requestPermission({mode:'readwrite'});
+      if(perm==='granted') await activateFolder(handle);
+    }catch(e){ console.error(e); }
+  });
+
+  async function initFolderBackup(){
+    if(!supportsFS){ document.getElementById('backupBar').querySelector('#chooseFolderBtn').remove(); return; }
+    try{
+      var handle = await idbGet('saveDir');
+      if(!handle){ setFolderStatus('choose'); return; }
+      var perm = await handle.queryPermission({mode:'readwrite'});
+      if(perm==='granted'){ await activateFolder(handle); }
+      else { setFolderStatus('grant'); }
+    }catch(e){ setFolderStatus('choose'); }
+  }
+
+  // manual export / import (works in every browser, including the phone)
+  document.getElementById('exportBtn').addEventListener('click', function(){
+    var data = collectAllLocal();
+    var blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = BACKUP_FILENAME;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById('importInput').addEventListener('change', async function(e){
+    var file = e.target.files[0];
+    if(!file) return;
+    try{
+      var text = await file.text();
+      var data = JSON.parse(text);
+      Object.keys(data).forEach(function(iso){
+        localStorage.setItem('todoapp:day:'+iso, JSON.stringify(data[iso]));
+      });
+      await goToDate(currentDate);
+      if(view==='report') renderReport();
+      alert('اطلاعات با موفقیت بازیابی شد.');
+    }catch(err){
+      alert('این فایل قابل خواندن نبود.');
+    }
+    e.target.value = '';
+  });
+
+  // ---------- share / transfer to another phone or computer ----------
+  document.getElementById('shareBtn').addEventListener('click', async function(){
+    var data = collectAllLocal();
+    var json = JSON.stringify(data, null, 2);
+    var blob = new Blob([json], {type:'application/json'});
+    var file = new File([blob], BACKUP_FILENAME, {type:'application/json'});
+    try{
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], title:'پشتیبان چک‌لیست روزانه', text:'این فایل رو با اپ چک‌لیست روزانه، از قسمت «بازیابی از فایل» باز کن.'});
+        return;
+      }
+    }catch(e){ /* user cancelled share sheet, do nothing */ return; }
+    // fallback: browsers/devices without file-sharing support just get the download
+    document.getElementById('exportBtn').click();
+    alert('این مرورگر گزینه اشتراک‌گذاری مستقیم فایل رو نداره؛ به‌جاش فایل پشتیبان دانلود شد، از همونجا می‌تونی به گوشی یا سیستم دیگه منتقلش کنی.');
+  });
+
+  // ---------- monthly excel export ----------
+  function toPersianDateStr(iso){
+    return dateFmt.format(fromISO(iso));
+  }
+  document.getElementById('exportExcelBtn').addEventListener('click', async function(){
+    var rangeData = await fetchRangeData(30);
+    var withTasks = rangeData.withTasks.slice().sort(function(a,b){
+      return a.iso < b.iso ? -1 : (a.iso > b.iso ? 1 : 0);
+    });
+
+    var summaryRows = [['تاریخ', 'تعداد کل کار', 'انجام‌شده', 'درصد پیشرفت']];
+    var allTasksRows = [['تاریخ', 'اولویت', 'متن کار', 'وضعیت']];
+    var prioLabelFa = {urgent:'ضروری', important:'واجب', optional:'خوبه انجام بشه'};
+
+    withTasks.forEach(function(r){
+      var total = r.tasks.length;
+      var done = r.tasks.filter(function(t){return t.done;}).length;
+      var pct = total? Math.round(done/total*100):0;
+      var dateStr = toPersianDateStr(r.iso);
+      summaryRows.push([dateStr, total, done, pct+'٪']);
+      r.tasks.forEach(function(t){
+        allTasksRows.push([dateStr, prioLabelFa[t.priority]||t.priority, t.text, t.done?'انجام شده':'انجام نشده']);
+      });
+    });
+
+    if(withTasks.length===0){
+      alert('برای ۳۰ روز اخیر هنوز کاری ثبت نشده که بشه ازش خروجی گرفت.');
+      return;
+    }
+
+    var wb = XLSX.utils.book_new();
+    var wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
+    var wsAll = XLSX.utils.aoa_to_sheet(allTasksRows);
+    XLSX.utils.book_append_sheet(wb, wsSummary, 'خلاصه روزانه');
+    XLSX.utils.book_append_sheet(wb, wsAll, 'همه کارها');
+    XLSX.writeFile(wb, 'گزارش-ماهانه.xlsx');
+  });
+
+  // ---------- rendering: day view ----------
+  function renderDayHeader(){
+    var d = fromISO(currentDate);
+    document.getElementById('weekdayLabel').textContent = weekdayFmt.format(d);
+    document.getElementById('dateLabel').textContent = dateFmt.format(d);
+    document.getElementById('todayPill').style.display = (currentDate===todayISO) ? 'none' : 'inline-block';
+  }
+
+  function renderProgress(){
+    var total = currentTasks.length;
+    var done = currentTasks.filter(function(t){return t.done;}).length;
+    var pct = total? Math.round(done/total*100) : 0;
+    var ring = document.getElementById('ring');
+    ring.style.background = 'conic-gradient(var(--accent) '+pct+'%, var(--paper) 0)';
+    document.getElementById('ringPct').textContent = faNum(pct)+'٪';
+    var big = document.getElementById('progressBig');
+    var small = document.getElementById('progressSmall');
+    if(total===0){
+      big.textContent = 'هنوز کاری ثبت نشده';
+      small.textContent = 'کارهای این روز رو بنویس';
+    } else {
+      big.textContent = 'پیشرفت امروز: '+faNum(pct)+'٪';
+      small.textContent = faNum(done)+' از '+faNum(total)+' کار انجام شده';
+    }
+  }
+
+  function taskRowEl(task){
+    var row = document.createElement('div');
+    row.className = 'task '+task.priority+(task.done?' done':'');
+    row.dataset.id = task.id;
+
+    var handle = document.createElement('div');
+    handle.className = 'handle';
+    handle.textContent = '⋮⋮';
+
+    var check = document.createElement('button');
+    check.className = 'check';
+    check.addEventListener('click', function(){
+      task.done = !task.done;
+      persistAndRender();
+    });
+
+    var text = document.createElement('div');
+    text.className = 'text';
+    text.contentEditable = 'false';
+    text.textContent = task.text;
+    text.addEventListener('click', function(e){
+      if(text.contentEditable==='true') return;
+      text.contentEditable = 'true';
+      text.focus();
+      document.execCommand('selectAll',false,null);
+    });
+    text.addEventListener('blur', function(){
+      text.contentEditable = 'false';
+      var v = text.textContent.trim();
+      if(!v){
+        currentTasks = currentTasks.filter(function(t){return t.id!==task.id;});
+      } else {
+        task.text = v;
+      }
+      // defer the DOM-rebuilding render so it doesn't run synchronously
+      // inside the browser's blur event dispatch (avoids NotFoundError)
+      setTimeout(persistAndRender, 0);
+    });
+    text.addEventListener('keydown', function(e){
+      if(e.key==='Enter'){ e.preventDefault(); text.blur(); }
+    });
+
+    var del = document.createElement('button');
+    del.className = 'del';
+    del.textContent = '×';
+    del.addEventListener('click', function(){
+      currentTasks = currentTasks.filter(function(t){return t.id!==task.id;});
+      persistAndRender();
+    });
+
+    row.appendChild(handle);
+    row.appendChild(check);
+    row.appendChild(text);
+    row.appendChild(del);
+
+    enableDrag(row, handle, task);
+    return row;
+  }
+
+  function renderGroups(){
+    var byP = {urgent:[], important:[], optional:[]};
+    currentTasks.forEach(function(t){ (byP[t.priority]||byP.optional).push(t); });
+    PRIO_ORDER.forEach(function(p){
+      byP[p].sort(function(a,b){ return (a.order||0)-(b.order||0); });
+      var container = document.getElementById('list-'+p);
+      container.innerHTML='';
+      byP[p].forEach(function(t){ container.appendChild(taskRowEl(t)); });
+    });
+    document.getElementById('emptyState').style.display = currentTasks.length? 'none':'block';
+    document.getElementById('groups').style.display = currentTasks.length? 'block':'none';
+  }
+
+  function persistAndRender(){
+    saveDay(currentDate, currentTasks);
+    renderProgress();
+    renderGroups();
+  }
+
+  // ---------- drag reorder (pointer events, mouse+touch) ----------
+  function enableDrag(row, handle, task){
+    var startY=0, container=null, siblings=[], dragging=false;
+
+    handle.addEventListener('pointerdown', function(e){
+      e.preventDefault();
+      dragging = true;
+      startY = e.clientY;
+      container = row.parentElement;
+      siblings = Array.prototype.slice.call(container.children);
+      row.classList.add('dragging');
+      handle.setPointerCapture(e.pointerId);
+    });
+
+    handle.addEventListener('pointermove', function(e){
+      if(!dragging) return;
+      var y = e.clientY;
+      var moving = row;
+      var after = siblings.find(function(sib){
+        if(sib===moving) return false;
+        var box = sib.getBoundingClientRect();
+        return y < box.top+box.height/2;
+      });
+      if(after){
+        if(after!==moving.nextSibling) container.insertBefore(moving, after);
+      } else {
+        container.appendChild(moving);
+      }
+    });
+
+    function finish(e){
+      if(!dragging) return;
+      dragging = false;
+      row.classList.remove('dragging');
+      try{ handle.releasePointerCapture(e.pointerId); }catch(err){}
+      // recompute order for this priority group based on new DOM order
+      var newOrder = Array.prototype.slice.call(container.children).map(function(el){return el.dataset.id;});
+      newOrder.forEach(function(id, idx){
+        var t = currentTasks.find(function(x){return x.id===id;});
+        if(t) t.order = idx;
+      });
+      persistAndRender();
+    }
+    handle.addEventListener('pointerup', finish);
+    handle.addEventListener('pointercancel', finish);
+  }
+
+  // ---------- add task ----------
+  document.querySelectorAll('.swatch').forEach(function(sw){
+    sw.addEventListener('click', function(){
+      document.querySelectorAll('.swatch').forEach(function(s){s.classList.remove('selected');});
+      sw.classList.add('selected');
+      selectedPriority = sw.dataset.p;
+    });
+  });
+
+  function addTask(){
+    var input = document.getElementById('taskInput');
+    var v = input.value.trim();
+    if(!v) return;
+    var groupTasks = currentTasks.filter(function(t){return t.priority===selectedPriority;});
+    var maxOrder = groupTasks.reduce(function(m,t){return Math.max(m, t.order||0);}, -1);
+    currentTasks.push({id:uid(), text:v, priority:selectedPriority, done:false, order:maxOrder+1});
+    input.value='';
+    persistAndRender();
+  }
+  document.getElementById('addBtn').addEventListener('click', addTask);
+  document.getElementById('taskInput').addEventListener('keydown', function(e){
+    if(e.key==='Enter') addTask();
+  });
+
+  // ---------- day navigation ----------
+  async function goToDate(iso){
+    currentDate = iso;
+    currentTasks = await loadDay(iso);
+    renderDayHeader();
+    renderProgress();
+    renderGroups();
+  }
+  document.getElementById('prevDay').addEventListener('click', function(){
+    var d = fromISO(currentDate); d.setDate(d.getDate()-1);
+    goToDate(toISO(d));
+  });
+  document.getElementById('nextDay').addEventListener('click', function(){
+    var d = fromISO(currentDate); d.setDate(d.getDate()+1);
+    goToDate(toISO(d));
+  });
+  document.getElementById('todayPill').addEventListener('click', function(){
+    goToDate(todayISO);
+  });
+
+  // ---------- bottom nav / views ----------
+  function setView(v){
+    view = v;
+    document.getElementById('day-view').style.display = v==='day' ? 'block':'none';
+    document.getElementById('report-view').style.display = v==='report' ? 'block':'none';
+    document.getElementById('navDay').classList.toggle('active', v==='day');
+    document.getElementById('navReport').classList.toggle('active', v==='report');
+    if(v==='report') renderReport();
+  }
+  document.getElementById('navDay').addEventListener('click', function(){ setView('day'); });
+  document.getElementById('navReport').addEventListener('click', function(){ setView('report'); });
+
+  // ---------- report ----------
+  document.getElementById('tabWeek').addEventListener('click', function(){
+    reportRange='week';
+    document.getElementById('tabWeek').classList.add('active');
+    document.getElementById('tabMonth').classList.remove('active');
+    renderReport();
+  });
+  document.getElementById('tabMonth').addEventListener('click', function(){
+    reportRange='month';
+    document.getElementById('tabMonth').classList.add('active');
+    document.getElementById('tabWeek').classList.remove('active');
+    renderReport();
+  });
+
+  async function fetchRangeData(days){
+    var dates = [];
+    for(var i=0;i<days;i++){
+      var d = new Date(today); d.setDate(d.getDate()-i);
+      dates.push(toISO(d));
+    }
+    var results = await Promise.all(dates.map(function(iso){
+      return loadDay(iso).then(function(tasks){ return {iso:iso, tasks:tasks}; });
+    }));
+    var withTasks = results.filter(function(r){return r.tasks.length>0;});
+    var totalAll=0, doneAll=0;
+    withTasks.forEach(function(r){
+      totalAll += r.tasks.length;
+      doneAll += r.tasks.filter(function(t){return t.done;}).length;
+    });
+    return {withTasks:withTasks, totalAll:totalAll, doneAll:doneAll};
+  }
+
+  async function renderReport(){
+    var days = reportRange==='week' ? 7 : 30;
+    var rangeData = await fetchRangeData(days);
+    var withTasks = rangeData.withTasks;
+    var totalAll = rangeData.totalAll;
+    var doneAll = rangeData.doneAll;
+    var overallPct = totalAll? Math.round(doneAll/totalAll*100) : 0;
+    document.getElementById('reportPct').textContent = faNum(overallPct)+'٪';
+    document.getElementById('reportLbl').textContent = 'میانگین پیشرفت '+(reportRange==='week'?'هفته اخیر':'ماه اخیر');
+    document.getElementById('reportBarFill').style.width = overallPct+'%';
+
+    var dayListEl = document.getElementById('dayList');
+    dayListEl.innerHTML='';
+    if(withTasks.length===0){
+      dayListEl.innerHTML = '<div class="empty-state">هنوز داده‌ای برای این بازه ثبت نشده</div>';
+    }
+    var sortedByDate = withTasks.slice().sort(function(a,b){
+      return a.iso < b.iso ? -1 : (a.iso > b.iso ? 1 : 0);
+    });
+    sortedByDate.forEach(function(r){
+      var total = r.tasks.length;
+      var done = r.tasks.filter(function(t){return t.done;}).length;
+      var pct = total? Math.round(done/total*100):0;
+      var row = document.createElement('div');
+      row.className='day-row';
+      row.style.cursor = 'pointer';
+      var d = fromISO(r.iso);
+      row.innerHTML = '<div class="dname">'+shortFmt.format(d)+'</div>'+
+        '<div class="mini-bar"><div class="mini-bar-fill" style="width:'+pct+'%;"></div></div>'+
+        '<div class="dpct">'+faNum(pct)+'٪</div>';
+      row.addEventListener('click', function(){
+        goToDate(r.iso);
+        setView('day');
+      });
+      dayListEl.appendChild(row);
+    });
+
+    var incompleteEl = document.getElementById('incompleteList');
+    incompleteEl.innerHTML='';
+    var anyIncomplete=false;
+    withTasks.forEach(function(r){
+      var d = fromISO(r.iso);
+      r.tasks.filter(function(t){return !t.done;}).forEach(function(t){
+        anyIncomplete=true;
+        var item = document.createElement('div');
+        item.className='incomplete-item';
+        item.innerHTML = '<span class="dot '+t.priority+'"></span>'+
+          '<div class="itxt">'+escapeHtml(t.text)+'<div class="idate">'+shortFmt.format(d)+'</div></div>';
+        incompleteEl.appendChild(item);
+      });
+    });
+    if(!anyIncomplete){
+      incompleteEl.innerHTML = '<div class="empty-state">همه کارها انجام شده 🎉</div>';
+    }
+  }
+
+  function escapeHtml(s){
+    var div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  // ---------- init ----------
+  goToDate(todayISO);
+  initFolderBackup();
+
+})();
+</script>
+</body>
+</html>
